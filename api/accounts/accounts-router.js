@@ -3,7 +3,6 @@ const md = require('./accounts-middleware')
 const Account = require('./accounts-model')
 
 router.get('/', async (req, res, next) => {
-  // DO YOUR MAGIC
   try {
     const accounts = await Account.getAll()
     res.json(accounts)
@@ -13,7 +12,6 @@ router.get('/', async (req, res, next) => {
 })
 
 router.get('/:id', md.checkAccountId, async (req, res, next) => {
-  // DO YOUR MAGIC
   res.json(req.account)
 })
 
@@ -22,9 +20,11 @@ router.post(
   md.checkAccountPayload, 
   md.checkAccountNameUnique, 
   async (req, res, next) => {
-  // DO YOUR MAGIC
   try {
-    const newAccount = await Account.create(req.body)
+    const newAccount = await Account.create({
+      name: req.body.name.trim(),
+      budget: req.body.budget,
+    })
     res.status(201).json(newAccount)
   } catch(err) {
     next(err)
@@ -35,8 +35,9 @@ router.put(
   '/:id', 
   md.checkAccountId, 
   md.checkAccountPayload,
-  md.checkAccountNameUnique,
-  (req, res, next) => {
+  async (req, res, next) => {
+    const updated = await Account.updateById(req.params.id, req.body)
+    res.json(updated)
   try {
     res.json('update account')
   } catch(err) {
@@ -54,7 +55,6 @@ router.delete('/:id', md.checkAccountId, async (req, res, next) => {
 })
 
 router.use((err, req, res, next) => { // eslint-disable-line
-  // DO YOUR MAGIC
   res.status(err.status || 500).json({
     message: err.message,
   })
